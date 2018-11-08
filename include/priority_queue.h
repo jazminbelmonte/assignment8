@@ -14,29 +14,30 @@ struct Cell {
 template<typename T>
 class PriorityQueue {
 public:
-  //constructors                                //???
-  PriorityQueue(): sz(0), capacity(8), elements(new Cell<T>[capacity]){}
-  PriorityQueue(bool min): min(false), sz(0), capacity(8), elements(new Cell<T>[capacity]){}
+  //constructors                                                 //???
+  PriorityQueue(): min(false), sz(0), capacity(8), elements(new Cell<T>[capacity]){};
+
+  PriorityQueue(bool min): min(min), sz(0), capacity(8), elements(new Cell<T>[capacity]){};
 
   //copy constructor
-  PriorityQueue(const PriorityQueue<T>& p): sz(p.sz), capacity(p.capacity) {
-    elements = new T[capacity];
+  PriorityQueue(const PriorityQueue<T>& p): sz(p.sz), capacity(p.capacity), min(p.min) {
+    elements = new Cell<T>[capacity];
     for(int i = 0; i < p.sz; i++){
       elements[i] = p.elements[i];
     }
   }
 
   //overloaded assignment operator
-  PriorityQueue<T>& operator=(const PriorityQueue<T>& c){
-    T* newElements = new T[c.capacity];
-    for(int i = 0; i < sz; i++){
-      newElements[i] = c.elements[i];
+  PriorityQueue<T>& operator=(const PriorityQueue<T>& p){
+    Cell<T>* newElements = new Cell<T>[p.capacity];
+    for(int i = 0; i < p.sz; i++){
+      newElements[i] = p.elements[i];
     }
 
     delete[] elements;
     elements = newElements;
-    sz = c.sz;
-    capacity = c.capacity;
+    sz = p.sz;
+    capacity = p.capacity;
 
     return *this;
   }
@@ -60,10 +61,9 @@ public:
   //adds element e with priority p into the queue
   //if the array is full then double the size of the array
   void enqueue(T e, int p, bool min = false) {
-    Cell<T> newCell = new Cell<T>(e);
-    newCell.priority = p;
+    //if empty
     if (sz == capacity) {
-      T *newElements = new T[capacity * 2];
+      auto *newElements = new Cell<T>[capacity * 2];
       for (int i = 0; i < sz; i++) {
         newElements[i] = elements[i];
       }
@@ -71,9 +71,18 @@ public:
       elements = newElements;
       capacity *= 2;
     }
-    elements[newCell.priority] = e;
+
+    elements[sz].info = e;
+    elements[sz].priority = p;
+
+    buildHeap();
     sz++;
-    heapify(e, sz, min);
+    /*Cell<T> newCell;
+    newCell.info = e;
+    newCell.priority = p;
+    elements[sz] = newCell;
+    sz++;
+    buildHeap(min);*/
   }
 
   //TODO
@@ -81,11 +90,12 @@ public:
   //which will be the first element
   T dequeue(){
     if(empty()){
-      throw std::runtime_error("Queue is empty");
+      throw std::runtime_error("Priority Queue is empty");
     }
 
-    auto temp = elements[0];
-    delete elements[0];
+    T temp = elements[sz-1].info;
+    sz--;
+    buildHeap();
     return temp;
   }
 
@@ -96,31 +106,7 @@ public:
     if(empty()){
       throw std::runtime_error("Queue is empty");
     }
-    return elements[0];
-  }
-
-  void buildHeap(bool reversed) {
-    for (int i = sz / 2 - 1; i >= 0; i--) {
-      heapify(i, sz, reversed);
-    }
-  }
-
-  void heapify(int p, int hsz, bool min) {
-    int left = 2 * p + 1;
-    int right = left + 1;
-    int largest = p;
-    if (left < hsz && lessOrGreaterThan(p, left, min)) {
-      largest = left;
-    }
-
-    if (right < hsz && lessOrGreaterThan(largest, right, min)) {
-      largest = right;
-    }
-
-    if (largest != p) {
-      swap(p, largest);
-      heapify(largest, hsz, min);
-    }
+    return elements[sz-1].info;
   }
 
   //destructor
@@ -128,19 +114,61 @@ public:
     delete[] elements;
   }
 protected:
-  unsigned sz, capacity;
+  unsigned int sz, capacity;
   bool min;
   Cell<T>* elements;
 
-
-  void swap(T a, T b){
-    auto tmp = elements[a];
-    elements[a] = elements[b];
-    elements[b] = tmp;
+  void buildHeap() {
+    int size = sz +1;
+    for (int i = size / 2 - 1; i >= 0; i--) {
+      heapify(elements, size, i);
+    }
+    for (int i = sz; i >= 0; i--){
+      swap(0, i);
+      heapify(elements, i, 0);
+    }
   }
 
-  bool lessOrGreaterThan(int a, int b, bool min){
+  void heapify(Cell<T> cellArray[], int p, int i) {
+    int left = 2 * p + 1;
+    int right = left + 1;
+    int largest = p;
+
+    if (min) {
+      if (left < p && cellArray[left].priority < cellArray[largest].priority){
+        largest = left;
+      } else if (right < i && cellArray[right].priority < cellArray[largest].priority){
+        largest = right;
+      }
+    } else {
+      if (left < p && cellArray[left].priority > cellArray[largest].priority){
+        largest = left;
+      } else if (right < p && cellArray[right].priority > cellArray[largest].priority){
+        largest = right;
+      }
+    }
+
+    if (largest != p) {
+      swap(i, largest);
+      heapify(cellArray, p, largest);
+    }
+  }
+
+  void swap(int a, int b){
+    Cell<T> temporary;
+    //copying a into temp
+    temporary.info = elements[a].info;
+    temporary.priority = elements[a].priority;
+    //copying b into a
+    elements[a].info = elements[b].info;
+    elements[a].priority = elements[b].priority;
+    //copying from temp (a) into b
+    elements[b].info = temporary.info;
+    elements[b].priority = temporary.priority;
+  }
+
+  /*bool lessOrGreaterThan(T a, T b, bool min){
     return (!min && elements[a] < elements[b]) || (min && elements[a] > elements[b]);
-  }
+  }*/
 };
 #endif
