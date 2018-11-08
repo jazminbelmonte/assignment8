@@ -5,10 +5,11 @@ using namespace std;
 
 int main(){
   //TODO
-  PriorityQueue<int> pq;
+
+  /*PriorityQueue<int> pq;
   pq.enqueue(1, 9);
   pq.enqueue(2, 1);
-  cout << pq << endl;
+  cout << pq << endl;*/
   
   return 0;
 }
