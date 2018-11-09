@@ -42,12 +42,12 @@ public:
   }
 
   //returns if queue is full
-  const bool full() {
+  bool full() const{
     return sz == capacity;
   }
 
   //returns if
-  const bool empty() {
+  bool empty() const{
     return sz == 0;
   }
 
