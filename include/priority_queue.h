@@ -14,11 +14,11 @@ struct Cell {
 template<typename T>
 class PriorityQueue {
 public:
-  //constructors
+  //default constructor
   PriorityQueue() : min(false), elements(new Cell<T>[capacity]) {};
-
+  //constructor for setting up min-first queue
   PriorityQueue(bool minimum_first) : min(minimum_first), elements(new Cell<T>[capacity]) {};
-
+  //copy constructor
   PriorityQueue(const PriorityQueue<T> &p) : sz(p.sz), capacity(p.capacity), min(p.min), elements(new Cell<T>[capacity]) {
     elements = new Cell<T>[capacity];
     for (int i = 0; i < p.sz; i++) {
@@ -46,17 +46,18 @@ public:
     return sz == capacity;
   }
 
-  //returns if
+  //returns if queue is empty
   bool empty() const{
     return sz == 0;
   }
 
-  //returns the size
+  //returns the size of the queue
   int size() {
     return sz;
   }
 
-
+  //adds element ​e ​​with a priority ​​to the queue. If
+  //queue is full, it expands it to double the capacity.
   void enqueue(T e, int priority) {
     if (full()) {
       auto *newElements = new Cell<T>[capacity * 2];
@@ -73,7 +74,8 @@ public:
     sortByHeap();
     sz++;
   }
-
+  //removes and returns value of the element with the maximum
+  //or minimum priority
   T dequeue() {
     if (empty()) {
       throw std::runtime_error("Array is empty.");
@@ -83,6 +85,8 @@ public:
     return temp;
   };
 
+  //returns the value of the elements with the maximum or min
+  //priority
   T peek() const{
     if (empty()) {
       throw std::runtime_error("Array is empty.");
@@ -90,6 +94,7 @@ public:
     return elements[sz - 1].info;
   }
 
+  //destructor
   ~PriorityQueue() {
     delete[] elements;
   };
@@ -113,6 +118,7 @@ protected:
     elements[b].priority = temporary.priority;
   }
 
+  //sort by heap taken from sorting code used in class
   void sortByHeap() {
     for (int i = (sz + 1) / 2 - 1; i >= 0; i--)
       heapify((sz + 1), i);
@@ -122,12 +128,15 @@ protected:
     }
   }
 
+  //heapify code used from sorting code done in class
   void heapify(int n, int i) {
     int left = 2 * i + 1;
     int right = left + 1;
     int biggest = i;
 
     //determine what is less than and what is greater than
+    //could not implement greaterThanOrLessThan function so had to do it the
+    //longer (and more complicated) way
     if (min) {
       if (left < n && elements[left].priority < elements[biggest].priority) {
         biggest = left;
@@ -144,7 +153,6 @@ protected:
       }
     }
 
-    //
     if (biggest != i) {
       swap(i, biggest);
       heapify(n, biggest);
